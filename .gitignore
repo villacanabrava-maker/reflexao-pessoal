@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lockfile isn't committed from this sandbox (too large to push through the
+# GitHub MCP file API here) — run `npm install` to regenerate it.
+/package-lock.json
