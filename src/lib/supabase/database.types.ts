@@ -12,57 +12,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      reflections: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          reflection: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          reflection: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          reflection?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      library_items: {
-        Row: {
-          created_at: string
-          id: string
-          original_text: string
-          status: string
-          title: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          original_text: string
-          status?: string
-          title: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          original_text?: string
-          status?: string
-          title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       library_chunks: {
         Row: {
           content: string
@@ -100,6 +49,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      library_items: {
+        Row: {
+          created_at: string
+          id: string
+          original_text: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_text: string
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_text?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reflections: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          reflection: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          reflection: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          reflection?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
