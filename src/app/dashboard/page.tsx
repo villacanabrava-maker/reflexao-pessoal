@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 
-import { signOut } from "@/app/auth-actions";
+import { AppNav } from "@/app/app-nav";
+import { SubmitButton } from "@/app/submit-button";
 import { createClient } from "@/lib/supabase/server";
 
 import { createReflection } from "./actions";
-import { SubmitButton } from "./submit-button";
 
 export default async function DashboardPage({
   searchParams,
@@ -26,22 +26,7 @@ export default async function DashboardPage({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-10">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Reflexão Pessoal</h1>
-          <p className="text-sm text-neutral-500">
-            {String(claimsData.claims.email ?? "")}
-          </p>
-        </div>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-sm text-neutral-500 underline hover:text-neutral-800"
-          >
-            Sair
-          </button>
-        </form>
-      </header>
+      <AppNav active="reflexoes" email={String(claimsData.claims.email ?? "")} />
 
       <section className="rounded-xl border border-neutral-200 p-5">
         <h2 className="mb-3 text-lg font-medium">Como você está agora?</h2>
@@ -54,7 +39,7 @@ export default async function DashboardPage({
             placeholder="Escreva livremente sobre seu dia, um sentimento ou uma situação..."
             className="rounded-lg border border-neutral-300 p-3 text-sm outline-none focus:border-neutral-500"
           />
-          <SubmitButton />
+          <SubmitButton label="Gerar reflexão" pendingLabel="Gerando reflexão..." />
         </form>
         {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
       </section>

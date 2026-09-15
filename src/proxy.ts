@@ -29,7 +29,10 @@ export async function proxy(request: NextRequest) {
   const isAuthenticated = Boolean(data?.claims);
   const { pathname } = request.nextUrl;
 
-  if (!isAuthenticated && pathname.startsWith("/dashboard")) {
+  const isProtectedRoute =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/library");
+
+  if (!isAuthenticated && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

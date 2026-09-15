@@ -2,10 +2,14 @@
 
 App em Next.js (App Router + TypeScript + Tailwind) para escrever anotações
 pessoais e receber, na hora, uma reflexão gerada pela Claude API. Sem
-Lovable — o código é escrito diretamente neste repositório.
+Lovable — o código é escrito diretamente neste repositório. Em produção em
+`https://reflexao-pessoal.vercel.app`.
 
-**Escopo desta primeira versão:** login/cadastro por e-mail e senha (Supabase
-Auth) + criar/gerar reflexão. Áudio e imagem ficam para depois.
+Este projeto está evoluindo para o **Memória Reflexiva**: um acervo pessoal
+pesquisável que apoia a escrita de novas reflexões com base no que a própria
+pessoa já escreveu. O roteiro completo (8 etapas) foi construído a partir de
+um kit de planejamento fornecido pelo usuário; a etapa 0 (login + gerar
+reflexão) e a etapa 1 (Biblioteca básica) já estão implementadas.
 
 ## Stack
 
@@ -71,13 +75,21 @@ Auth) + criar/gerar reflexão. Áudio e imagem ficam para depois.
   `generateReflection` (`src/lib/anthropic.ts`), que faz uma chamada à
   Claude API e retorna um texto curto de reflexão, e salva os dois textos
   (`content` e `reflection`) na tabela `reflections`.
+- `src/app/library/page.tsx` + `actions.ts` — Biblioteca: colar um texto ou
+  enviar um `.txt`, que é guardado (`library_items`) e separado em trechos
+  pesquisáveis (`library_chunks`, `src/lib/library.ts`). A busca usa full
+  text search em português do Postgres; cada resultado abre o trecho exato
+  na página de detalhe (`src/app/library/[id]/page.tsx`), destacado via
+  âncora `#chunk-<id>`.
+- `src/app/app-nav.tsx` — cabeçalho/navegação compartilhado entre
+  Reflexões e Biblioteca.
 
 ## Banco de dados
 
-A tabela `reflections` e as policies de RLS já foram aplicadas no projeto
-Supabase via migration (`create_reflections_table`):
+Tabelas e RLS já aplicadas no projeto Supabase via migrations:
 
 ```sql
+-- create_reflections_table
 create table public.reflections (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -85,22 +97,46 @@ create table public.reflections (
   reflection text not null,
   created_at timestamptz not null default now()
 );
+
+-- create_library_tables
+create table public.library_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  original_text text not null,
+  status text not null default 'processed',
+  created_at timestamptz not null default now()
+);
+
+create table public.library_chunks (
+  id uuid primary key default gen_random_uuid(),
+  library_item_id uuid not null references public.library_items (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  position integer not null,
+  content text not null,
+  content_tsv tsvector generated always as (to_tsvector('portuguese', content)) stored,
+  created_at timestamptz not null default now()
+);
 ```
 
-Cada usuário só pode ler e inserir suas próprias linhas (`auth.uid() =
-user_id`).
+Cada usuário só lê/insere/exclui suas próprias linhas (`auth.uid() =
+user_id`) em todas as tabelas.
 
 ## Testado neste ambiente
 
-`npm run lint`, `npm run build` e o redirecionamento `/` → `/login` foram
-validados aqui. O fluxo completo de cadastro/login contra o Supabase real
-**não** pôde ser testado de ponta a ponta neste sandbox porque o proxy de
-rede daqui bloqueia conexões HTTPS diretas para `*.supabase.co` (só o
-servidor MCP do Supabase tem acesso) — vale testar localmente ou fazer o
-primeiro deploy para confirmar o fluxo de e-mail de confirmação.
+`npm run lint` e `npm run build` foram validados aqui a cada mudança. O
+fluxo completo (cadastro, login, gerar reflexão, Biblioteca) foi testado
+em produção pelo usuário — o sandbox de desenvolvimento não tem acesso
+HTTPS direto a `*.supabase.co`.
 
-## Próximos passos (fora do escopo desta versão)
+## Roteiro (Memória Reflexiva)
 
-- Áudio (gravação/transcrição) e imagem.
-- Editar/excluir reflexões.
-- Deploy (Vercel é o caminho mais direto para Next.js).
+0. ✅ Fundação — login e gerar reflexão.
+1. ✅ Biblioteca básica — colar texto/`.txt`, trechos, busca.
+2. Formatos ricos — PDF e Word de verdade.
+3. Busca inteligente — busca por significado (embeddings).
+4. Meu Cérebro — perfil autoral revisável.
+5. Criar Reflexão completo — entrada externa + memórias + plano aprovado
+   + geração + revisão + incorporação opcional.
+6. Privacidade e preferências — exportar dados, excluir conta.
+7. Testes e lançamento cuidadoso.
